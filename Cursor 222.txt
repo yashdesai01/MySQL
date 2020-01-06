@@ -1,0 +1,33 @@
+
+delimiter //
+
+create procedure emp_list1(inout emp_data varchar(100))
+begin
+declare is_done integer default 0;
+declare vename varchar(100);
+declare emp_cur cursor for
+select ename from emp;
+declare continue handler for not found set is_done = 1;
+open emp_cur;
+get_data: loop
+fetch emp_cur into vename;
+if is_done = 1 then
+leave get_data;
+end if;
+set emp_data=concat(vename,";",emp_data);
+end loop get_data;
+close emp_cur;
+end//
+
+delimiter ;
+
+
+for Run:
+set@emp_data="";
+
+for Call:
+call emp_list1(@emp_data)
+
+select Data:
+select @emp_data;
+

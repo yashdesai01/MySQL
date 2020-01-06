@@ -1,0 +1,19 @@
+#######################################01#########################################
+delimiter $$
+create procedure p1()
+begin
+	select * from members where salary>(select salary from members where manager_no=1);
+end;
+$$
+
+
+#######################################01#########################################
+delimiter $$
+create procedure p2()
+begin
+	select mno, name, branch.branch_no, max(salary), area from members, branch where area='Vadi plot';
+	select mno, name, branch.branch_no, max(salary), area from members, branch where area='Sudama Chowk';
+	select mno, name, branch.branch_no, max(salary), area from members, branch where area='Narsang Tekri';
+	
+end;
+$$

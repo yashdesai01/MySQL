@@ -1,0 +1,63 @@
+create database assignment12;
+use assignment12;
+
+create table customer(cid int(5) primary key,
+fname varchar(25),
+lname varchar(25),
+city varchar(25),
+country varchar(25),
+phoneno int(12));
+
+create table orders(oid int(5),
+odate date,
+onumber int(5),
+cid int(5)references customer(cid),
+ordertotalamount int(10));
+ 
+ insert into customer values( 1,'krupa','bhalani','rajkot','india',7789955422);
+ insert into customer values( 2,'hrtujehrj','gfgf','rajkot','india',9999999999);
+ insert into customer values( 3,'vj','jariya','rajkot','india',5555555555);
+ insert into customer values( 4,'ny','pr','rajkot','india',4444444444);
+ insert into customer values( 5,'ar','rd','rajkot','india',4545454545);
+ insert into customer values( 6,'mrg','lkn','rajkot','pak',4545454545);
+ insert into customer values( 7,'fgdfgd','fdfd','rajkot','bang',4545454545);
+
+ 
+ insert into orders values(1,'2018-10-16',20,1,500);
+ insert into orders values(2,'2018-09-10',25,2,1500);
+ insert into orders values(3,'2018-08-09',15,3,2500);
+ insert into orders values(4,'2018-07-08',5,4,5500);
+ insert into orders values(5,'2018-06-07',4,5,5600);
+ 
+
+1 -- List the number of customers in each country.Only include countries with more than 100
+customers.
+SELECT MAX(country)AS country,count(country) FROM customer group by country HAVING COUNT(cid) > 100;
+
+2 -- List the number of customers in each country, except China, sorted high to low. Only include
+countries with 5 or more customers
+
+SELECT MAX(country)AS country,count(country) FROM customer WHERE COUNTRY!='china' group by country HAVING COUNT(cid) > 5 ORDER BY COUNTRY DESC;
+
+
+3 -- List all customers with average orders between Rs.5000 and Rs.6500.
+
+select customer.fname,avg(ordertotalamount) from customer inner join orders on customer.cid=orders.cid where ordertotalamount between 5000 and 6500 group by customer.fname;
+
+
+4 -- 
+
+
+5. Create a function to return customer with maximum orders.
+
+--this function gives an error
+
+delimiter $
+create or replace function f1()
+returns int 
+BEGIN
+	DECLARE result int;
+	SELECT CONCAT(c.fname,'',max(o.ordertotalamount))into result from orders o,customer c where o.cid=c.cid;
+	return result;
+END$
+delimiter ;

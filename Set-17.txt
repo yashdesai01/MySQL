@@ -1,0 +1,27 @@
+#account table
+
+create table account(Ac_No int(5),Name varchar(15),Ac_Type char(1),Balance_Amt int(9),Balance_Date date);
+
+
+#transaction table
+
+create table transaction(Ac_No int(5),Date date,Tr_Type char(1),Amt int(9),Balance int(9),Remark varchar(30));
+
+
+#procedure
+
+DELIMITER $$
+CREATE PROCEDURE p3 
+(
+   start date,
+   finish date
+) 
+BEGIN 
+   SELECT * FROM transaction 
+   WHERE Date between start 
+   AND finish; 
+END$$
+DELIMITER ;
+
+
+ 

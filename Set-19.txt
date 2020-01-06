@@ -1,0 +1,97 @@
+#SET - 19 Solution
+
+
+/* Employee (eid, fname, lname, salary)
+1. Use a Cursor for Loop inside a function to calculate and return total paid salary to all employees by the company. */
+
+DELIMITER $$
+
+CREATE OR REPLACE FUNCTION fcurdemo()
+RETURNS INT
+BEGIN
+	DECLARE done INT DEFAULT FALSE;
+
+	DECLARE MSAL INT(9);
+	DECLARE TSAL INT(9) DEFAULT 0;
+	DECLARE cur2 CURSOR FOR SELECT SALARY FROM employee;
+
+	DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+	OPEN cur2;
+	
+	read_loop: LOOP
+
+		set msal=0;
+
+		FETCH cur2 into msal;
+		set tsal=tsal+msal;
+
+		# select msal; --It will print the salary of each record
+		# select tsal; --It will print the sum of salary after every 
+		
+		IF done THEN
+			LEAVE read_loop;
+		END IF;
+	END LOOP;
+		return tsal;
+		
+	CLOSE cur2;
+END;
+
+$$
+
+DELIMITER ;
+
+
+
+---------------------------------------------------------------------------------------
+
+
+/* Employee (eid, fname, lname, salary)
+2. Modify the function created above to become a procedure and display the total paid salary from the procedure itself. Instead of calculating for all employees, calculate only for those employees whose name starts from a character passed as parameter to the procedure and hence to the cursor. */
+
+DELIMITER $$
+
+CREATE OR REPLACE PROCEDURE curdemo1(IN a varchar(20))
+BEGIN
+	DECLARE done INT DEFAULT FALSE;
+
+	DECLARE MSAL INT(9);
+	DECLARE TSAL INT(9) DEFAULT 0;
+	DECLARE cur3 CURSOR FOR SELECT SALARY FROM employee where emp_name like concat('%',a,'%');
+
+	DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+	set tsal=0;
+
+	OPEN cur3;
+		
+	read_loop: LOOP
+
+		set msal=0;
+		
+		FETCH cur3 into msal;
+		set tsal=tsal+msal;
+
+		IF done THEN
+			LEAVE read_loop;
+		END IF;
+
+	END LOOP;
+		select tsal;
+		
+	CLOSE cur3;
+END;
+
+$$
+
+DELIMITER ;
+
+
+
+
+
+
+
+
+	

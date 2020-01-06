@@ -1,0 +1,110 @@
+create database theatre;
+use theatre;
+
+create table screen
+(screen_id int(10)primary key,
+location varchar(10),
+seating_cap varchar(10));
+
+create table movie
+(movie_id int(3) primary key,
+movie_name varchar(100),
+date_of_release date);
+
+create table current
+(screen_id int(10),
+movie_id int(3),
+date_of_arrival date,
+date_of_closure date,
+foreign key(screen_id) references screen(screen_id)ON DELETE CASCADE,
+foreign key(movie_id) references movie(movie_id) ON DELETE CASCADE);
+
+insert into screen values(1,'s1','FF'),(2,'s2','FF'),(3,'s3','SF'),(4,'s4','TF'),(5,'s5','FF');
+insert into movie values(101,'3 idiots','2018-08-17'),(102,'star wars III','2018-07-27'),(103,'supreme khiladi','2018-01-12'),(104,'horror','2018-02-16'),(105,'koi mil gaya','2000-10-12');
+insert into current values(1,101,'2018-08-17','2018-09-17'),(2,102,'2018-07-27','2018-08-27'),(3,103,'2018-01-12','2018-04-12'),(4,104,'2018-02-16','2018-03-16'),(5,105,'2004-11-24','2000-12-24');
+
+
+
+1 -- Get the name of movie which has run the longest in the multiplex so far.
+
+
+SELECT m.movie_name,MAX(DATEDIFF(c.date_of_closure, m.date_of_release)) AS days FROM current c,movie m group by m.movie_id order by days DESC LIMIT 1;
+
+
+2 -- Get the average duration of a movie on screen number ‘S4’.
+
+SELECT m.movie_name,AVG(DATEDIFF(c.date_of_closure, m.date_of_release))AS average FROM current c,movie m,screen s WHERE c.movie_id=m.movie_id and s.screen_id=c.screen_id and s.location="s4" group by m.movie_id LIMIT 1;
+
+3. Get the details of movie that closed on date 24-november-2004.
+
+select * from movie m,current c where c.movie_id=m.movie_id and date_of_arrival='2004-11-24' ;
+
+
+4. Movie star wars III was released in the 7th week of 2005. Find out the date of its release considering that a movie releases only on Friday.
+
+select concat('movie star wars releases on ',dayname('2018-07-27'))"STAR WARS III";
+
+
+5. Get the full outer join of the relations screen and current.
+
+SELECT * FROM screen LEFT OUTER JOIN current  ON screen.screen_id=current.screen_id UNION SELECT * FROM  screen RIGHT OUTER JOIN current ON screen.screen_id=current.screen_id;
+
+6.Write a PL/SQL function which will count total number of day’s horror movie last longer.
+
+delimiter $$
+create or replace function
+f1(movie_name varchar(20))
+returns int
+begin
+	 declare result int(10);
+	 declare mname varchar(20);
+	 SELECT DATEDIFF(c.date_of_closure, m.date_of_release)into result FROM current c,movie m,screen s WHERE c.movie_id=m.movie_id and s.screen_id=c.screen_id and m.movie_name="horror" group by m.movie_id;
+	 return result;
+end $$
+
+HOW TO RUN : 
+set @t1='horror'$$
+select f1(@t1)$$
+
+7 ----- Write a PL/SQL procedure that will display movie which is going to release today.
+
+delimiter $
+create or replace procedure p1()
+BEGIN
+	select * from MOVIE where DATE(CAST(DATE_OF_RELEASE AS DATE))=DATE(NOW());
+END $
+
+call p1()$
+
+
+8 ------- Write a trigger which will not allow to insert/update in current table if Date_of_arrival is less than date_of_closure
+
+DELIMITER $$
+CREATE OR REPLACE PROCEDURE raise_application_error(IN CODE INTEGER, IN MESSAGE VARCHAR(255)) SQL SECURITY INVOKER DETERMINISTIC
+BEGIN
+  CREATE TEMPORARY TABLE IF NOT EXISTS RAISE_ERROR(F1 INT NOT NULL);
+  SELECT CODE, MESSAGE INTO @error_code, @error_message;
+  INSERT INTO RAISE_ERROR VALUES(NULL);
+END;
+$$
+
+
+DELIMITER $$
+CREATE OR REPLACE PROCEDURE get_last_custom_error() SQL SECURITY INVOKER DETERMINISTIC
+BEGIN
+  SELECT @error_code, @error_message;
+END;
+$$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE OR REPLACE TRIGGER T_1
+BEFORE insert ON current
+FOR EACH ROW
+BEGIN
+	IF 'date_of_arrival'<'date_of_closure' THEN
+		call raise_application_error(1313,'Please enter date of arrival is less than date of closure');
+	END IF;
+END $$
+

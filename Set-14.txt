@@ -1,0 +1,209 @@
+---------------------------------------1-----------------------------------------
+MariaDB [(none)]> create database worker;
+Query OK, 1 row affected (0.00 sec)
+
+MariaDB [(none)]> use worker;
+Database changed
+MariaDB [worker]> create table emp
+    -> (empno int(10),
+    -> name varchar(20),
+    -> empadd varchar(25),
+    -> salary int(25),
+    -> birth_date date,
+    -> join_date date,
+    -> deptno;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '' at line 8
+MariaDB [worker]> tee d:/dbms/set_14.txt;
+MariaDB [worker]> CREATE TABLE DEPARTMENT
+    ->     (
+    ->      DEPT_NO INT(5) PRIMARY KEY,
+    ->      DEPT_NAME VARCHAR(5) UNIQUE,
+    ->      LOCATION VARCHAR(15)
+    ->     );
+Query OK, 0 rows affected (0.30 sec)
+
+MariaDB [worker]> CREATE TABLE EMPLOYEE
+    ->   (
+    ->    EMP_NO INT(5) PRIMARY KEY,
+    ->    EMP_NAME VARCHAR(15),
+    ->    ADDRESS VARCHAR(25),
+    ->    SALARY INT(9) ,
+    ->    BIRTH_DATE DATE ,
+    ->    JOIN_DATE DATE,
+    ->    DEPT_NO INT(5) REFERENCES DEPARTMENT(DEPT_NO) 
+    ->   );
+Query OK, 0 rows affected (0.19 sec)
+
+
+
+MariaDB [worker]> INSERT INTO DEPARTMENT VALUES(101,'IT','GONDAL');
+Query OK, 1 row affected (0.08 sec)
+
+
+MariaDB [worker]> INSERT INTO DEPARTMENT VALUES(102,'MBA','RAJKOT');
+Query OK, 1 row affected (0.05 sec)
+
+MariaDB [worker]> INSERT INTO DEPARTMENT VALUES(103,'MSC','RAJKOT');
+Query OK, 1 row affected (0.07 sec)
+
+MariaDB [worker]> INSERT INTO DEPARTMENT VALUES(104,'MCA','RAJKOT');
+Query OK, 1 row affected (0.11 sec)
+
+MariaDB [worker]> INSERT INTO DEPARTMENT VALUES(105,'MAM','RAJKOT');
+Query OK, 1 row affected (0.09 sec)
+
+MariaDB [worker]> insert into employee values(1,'manan','rajkot',10000,'1998-08-08','2018-06-09',101);
+Query OK, 1 row affected (0.10 sec)
+
+MariaDB [worker]> insert into employee values(2,'mina','surat',25000,'1997-05-09','2016-09-10',101);
+Query OK, 1 row affected (0.09 sec)
+
+MariaDB [worker]> insert into employee values(3,'sita','upleta',20000,'1998-05-09','2017-07-20',102);
+Query OK, 1 row affected (0.10 sec)
+
+MariaDB [worker]> insert into employee values(4,'raj','vadodara',30000,'1998-02-24','2015-05-25',103);
+Query OK, 1 row affected (0.11 sec)
+
+MariaDB [worker]> insert into employee values(5,'ram','navsari',35000,'1997-06-29','2016-06-21',104);
+Query OK, 1 row affected (0.08 sec)
+
+MariaDB [worker]> create or replace procedure p1()
+    -> begin
+    -> 	select emp_no,emp_name from employee;
+    -> end $$
+Query OK, 0 rows affected (0.26 sec)
+
+-------------------------------------2--------------------------------------------
+MariaDB [worker]> create table job
+    -> (jobid int(10),
+    -> type_of_job varchar(10),
+    -> status varchar(20));
+    -> $$
+Query OK, 0 rows affected (0.32 sec)
+
+MariaDB [worker]> insert into job values(1,'r','incomplete');
+Query OK, 1 row affected (0.08 sec)
+
+MariaDB [worker]> insert into job values(2,'r','complete');
+Query OK, 1 row affected (0.09 sec)
+
+MariaDB [worker]> insert into job values(3,'r','incomplete');
+Query OK, 1 row affected (0.07 sec)
+
+MariaDB [worker]> insert into job values(4,'r','complete');
+Query OK, 1 row affected (0.08 sec)
+
+MariaDB [worker]> insert into job values(5,'r','incomplete');
+Query OK, 1 row affected (0.08 sec)
+
+MariaDB [worker]> create or replace function f1()
+    -> returns int
+    -> begin
+    -> 	declare c int;
+    -> 	select count(*) into c from job where status='incomplete';
+    -> 	return c;
+    -> end $$
+Query OK, 0 rows affected (0.07 sec)
+
+MariaDB [worker]> select f1();
+    -> $$
++------+
+| f1() |
++------+
+|    3 |
++------+
+1 row in set (0.06 sec)
+
+-----------------------------3-----------------------------------------------
+MariaDB [worker]> create table item
+    -> (itemno int(10),
+    -> name varchar(20),
+    -> color varchar(10),
+    -> weight int(20));
+    -> $$
+Query OK, 0 rows affected (0.30 sec)
+
+MariaDB [worker]> delimiter ;
+MariaDB [worker]> insert into item values(1,'wafers','red',1),(2,'shampoo','black',2);
+Query OK, 2 rows affected (0.08 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+MariaDB [worker]> insert into item values(3,'conditionar','black',2),(4,'soap','green',3);
+Query OK, 2 rows affected (0.09 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+MariaDB [worker]> insert into item values(5,'oil','white',4);
+Query OK, 1 row affected (0.07 sec)
+
+
+MariaDB [worker]> delimiter $$
+MariaDB [worker]> create or replace function f2(i_weight int(20))
+    -> returns int
+    -> begin
+    -> 	declare ans int;
+    -> 	select count(*) into ans from item where weight=i_weight;
+    -> 	return ans;
+    -> end $$
+Query OK, 0 rows affected (0.06 sec)
+
+MariaDB [worker]> select f2(3)$$
++-------+
+| f2(3) |
++-------+
+|     1 |
++-------+
+1 row in set (0.00 sec)
+
+-------------------4-------------------------
+
+MariaDB [worker]> create table work
+    -> (worker_id int(10),
+    -> name varchar(20),
+    -> wage_per_hour int(10),
+    -> specialized_in varchar(10),
+    -> manager_id varchar(10));
+Query OK, 0 rows affected (0.23 sec)
+
+MariaDB [worker]> insert into work values(1,'mina',50,'painting',101);
+Query OK, 1 row affected (0.08 sec)
+
+MariaDB [worker]> insert into work values(2,'gita',60,'painting',102);
+Query OK, 1 row affected (0.13 sec)
+
+MariaDB [worker]> insert into work values(3,'ketan',30,'painting',101);
+Query OK, 1 row affected (0.07 sec)
+
+MariaDB [worker]> insert into work values(4,'fenil',40,'painting',105);
+Query OK, 1 row affected (0.07 sec)
+
+MariaDB [worker]> insert into work values(5,'vansh',30,'typing',104);
+Query OK, 1 row affected (0.08 sec)
+
+MariaDB [worker]> insert into work values(6,'vatsal',70,'painting',103);
+Query OK, 1 row affected (0.08 sec)
+
+MariaDB [worker]> insert into work values(7,'bansi',35,'painting',104);
+Query OK, 1 row affected (0.07 sec)
+
+MariaDB [worker]> create or replace procedure p3( )
+    -> begin
+    -> 
+    -> 	select * from work where specialized_in='painting' order by  wage_per_hour desc limit 5;
+    -> end $$
+Query OK, 0 rows affected (0.09 sec)
+
+MariaDB [worker]> call p3();
+    -> $$
++-----------+--------+---------------+----------------+------------+
+| worker_id | name   | wage_per_hour | specialized_in | manager_id |
++-----------+--------+---------------+----------------+------------+
+|         6 | vatsal |            70 | painting       | 103        |
+|         2 | gita   |            60 | painting       | 102        |
+|         1 | mina   |            50 | painting       | 101        |
+|         4 | fenil  |            40 | painting       | 105        |
+|         7 | bansi  |            35 | painting       | 104        |
++-----------+--------+---------------+----------------+------------+
+5 rows in set (0.00 sec)
+
+Query OK, 0 rows affected (0.05 sec)
+

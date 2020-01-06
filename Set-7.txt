@@ -1,0 +1,139 @@
+﻿create database assignment7;
+use assignment7;
+
+create table customer
+(
+cno int(10) PRIMARY KEY,
+cust_name varchar(100),
+cust_phone bigint(10),
+location varchar(10),
+gender varchar(1)
+);
+
+create table item
+(
+itemno int(3) primary key,
+itemname varchar(100),
+color varchar(10),
+weight int(10), 
+expire_date date,
+price int(10),
+shop_name varchar(100)
+);
+
+
+create table cust_item
+(
+cno int(3),
+itemno int(3),
+quantity_purchased int(100),
+date_purchase date,
+foreign key(itemno) references item(itemno) ON DELETE CASCADE,
+foreign key(cno) references customer(cno) ON DELETE CASCADE
+);
+
+
+insert into customer values (1,'ritu',9999999999,'rajkot','f'),(2,'asmita',8888888888,'rajkot','f'),(3,'kinal',7777777777,'bhuj','f'),(4,'kavita',6666666666,'porbandar','f'),(5,'jyoti',6666666666,'ahmedabad','f');
+insert into item values(101,'pqrs','black',10,'2019-12-30',100000,'RiTu'),(102,'abcd','brown',15,'2020-12-30',200000,'AsMitA'),(103,'efgh','white',20,'2021-12-30',1000,'KinAl'),(104,'ijkl','red',18,'2019-12-30',2500,'Kavita'),(105,'mnop','purple',19,'2019-12-30',100,'JyoTi');
+insert into cust_item values(1,101,100,'2018-12-30'),(2,102,200,'2019-12-30'),(3,103,300,'2020-12-30'),(4,104,400,'2018-12-30'),(5,105,500,'2018-12-30');
+
+
+2. Find the names of the customer who is located in same location as that of other customer.
+
+select cust_name from customer where location in(select location from customer group by location having COUNT(location)>1);
+
+3. Display the names of items which is black, white & brown in color.
+
+select itemname from item where color in("black","white","brown");
+
+4. Display the names of all the items whose names lies between ‘p’ and‘s’.
+
+select itemname from item where itemname like "p%s"; 
+
+5. Find the item which is having less weight.
+
+select min(weight),itemname from item;
+
+6. Add one month more to those items whose item no =40.
+
+select * from item where expire_date>=DATE_SUB(CURDATE(),INTERVAL 30 DAY) and itemno=40;
+
+7. Count total number of items which is going to expire in next month
+
+select count(itemname)from item where expire_date>=DATE_SUB(CURDATE(),INTERVAL 30 DAY);
+
+8. List all customers whose phone number starts with ‘99’.
+
+select cust_name from customer where cust_phone like '99%';
+
+9. Display total value (qty*price) for all items.
+
+SELECT item.itemname,SUM(cust_item.quantity_purchased*item.price) AS grand_total FROM cust_item inner JOIN item ON cust_item.itemno = item.itemno group by item.itemno;
+
+10. List customer details who has purchased maximum number of items.
+
+select item.itemname,count(cust_item.itemno) AS TotalOrders
+FROM cust_item inner join item
+Where item.itemno = cust_item.itemno 
+GROUP BY cno
+Order BY count(cust_item.itemno)DESC;
+
+11. Display total price item wise.
+
+SELECT item.itemname,SUM(cust_item.quantity_purchased*item.price) AS grand_total FROM cust_item inner JOIN item ON cust_item.itemno = item.itemno group by item.itemno;
+
+12--List name of items, customer details and qty purchased
+
+select i.itemname,c.cust_name,c.cno,c.cust_phone,ci.quantity_purchased from item i,customer c,cust_item ci where c.cno=ci.cno and i.itemno=ci.itemno; 
+
+
+13 -- Write a PL/SQL procedure which will display records in the following format
+
+delimiter $$
+create or replace procedure p1()
+BEGIN
+  DECLARE Grand_Total INT;  
+  SELECT i.itemno,i.itemname,i.expire_date,ci.quantity_purchased,i.price,sum(ci.quantity_purchased*i.price)"Grand_Total"
+  FROM item i,cust_item ci where i.itemno=ci.itemno group by i.itemno;
+end $$
+
+
+14 -- Write a trigger which do not allow insertion / updation / deletion of Item details on Sunday
+
+
+DELIMITER $$
+CREATE OR REPLACE TRIGGER TR_STUD1
+BEFORE INSERT ON item
+FOR EACH ROW
+BEGIN
+	IF DAYNAME(sysdate())='Sunday' THEN
+		call raise_application_error(1313,'you are not allowing to add record on monday');
+	END IF;
+END $$
+
+------------------------
+
+DELIMITER $$
+CREATE OR REPLACE TRIGGER TR_STUD1
+BEFORE update ON item
+FOR EACH ROW
+BEGIN
+	IF DAYNAME(sysdate())='Sunday' THEN
+		call raise_application_error(1313,'you are not allowing to add record on monday');
+	END IF;
+END $$
+
+---------------------------
+
+DELIMITER $$
+CREATE OR REPLACE TRIGGER TR_STUD1
+BEFORE delete ON item
+FOR EACH ROW
+BEGIN
+	IF DAYNAME(sysdate())='Sunday' THEN
+		call raise_application_error(1313,'you are not allowing to add record on monday');
+	END IF;
+END $$
+
+
+

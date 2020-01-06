@@ -1,0 +1,181 @@
+create table distributer(
+     dno int(5)primary key,
+     dname varchar(10),
+    daddress varchar(10),
+     dphone int(11));
+Query OK, 0 rows affected.
+
+create table item(
+     itemno int(10)primary key,
+     itemnae varchar(10),
+     colour varchar(10),
+     weight int(20));
+Query OK, 0 rows affected.
+
+create table dist_item(
+    dno int(5),
+    itemno int(10),
+    qty int(20),
+    foreign key(dno)references distributer(dno),
+    foreign key(itemno) references item(itemno));
+Query OK, 0 rows affected.
+
+
+MariaDB [dist]> insert into distributer values(1,'ram','rajkot','9909656718');
+Query OK, 1 row affected, 1 warning (0.11 sec)
+
+MariaDB [dist]> insert into distributer values(2,'lakhan','rajkot','9909657818');
+Query OK, 1 row affected, 1 warning (0.06 sec)
+
+MariaDB [dist]> insert into distributer values(3,'shayam','baroda','9909659818');
+Query OK, 1 row affected, 1 warning (0.03 sec)
+
+MariaDB [dist]> insert into distributer values(4,'ohrtho','baroda','9904659818');
+Query OK, 1 row affected, 1 warning (0.04 sec)
+
+MariaDB [dist]> insert into item values(101,'shamppo','pink',20);
+Query OK, 1 row affected (0.05 sec)
+
+MariaDB [dist]> insert into item values(102,'shoap','pink',70);
+Query OK, 1 row affected (0.07 sec)
+
+MariaDB [dist]> insert into item values(103,'dove','red',100);
+Query OK, 1 row affected (0.04 sec)
+
+MariaDB [dist]> insert into item values(104,'toothpast','white',75);
+Query OK, 1 row affected (0.04 sec)
+
+MariaDB [dist]> insert into dist_item values(1,101,100);
+Query OK, 1 row affected (0.04 sec)
+
+MariaDB [dist]> insert into dist_item values(2,102,50);
+Query OK, 1 row affected (0.03 sec)
+
+MariaDB [dist]> insert into dist_item values(3,103,75);
+Query OK, 1 row affected (0.02 sec)
+
+MariaDB [dist]> insert into dist_item values(4,104,80);
+Query OK, 1 row affected (0.06 sec)
+
+1. Add a column CONTACT_PERSON to the DISTRIBUTOR table with the not null constraint. 
+alter table dist_item add contact_person int(10);
+Query OK, 0 rows affected (0.82 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+MariaDB [dist]> desc dist_item;
++----------------+---------+------+-----+---------+-------+
+| Field          | Type    | Null | Key | Default | Extra |
++----------------+---------+------+-----+---------+-------+
+| dno            | int(5)  | YES  | MUL | NULL    |       |
+| itemno         | int(10) | YES  | MUL | NULL    |       |
+| qty            | int(20) | YES  |     | NULL    |       |
+| contact_person | int(10) | YES  |     | NULL    |       |
++----------------+---------+------+-----+---------+-------+
+4 rows in set (0.18 sec)
+
+2. Create a view LONDON_DIST on DIST_ITEM which contains only those records where distributors are from London. Make    sure that this condition is checked for every DML against this view.
+ create view london_dist as select dname,daddress,qty from distributer d,dist_item d1 where d.dno=d1.dno;
+ Query OK, 0 rows affected (0.18 sec)
+
+MariaDB [dist]> select * from london_dist;
++--------+----------+------+
+| dname  | daddress | qty  |
++--------+----------+------+
+| ram    | rajkot   |  100 |
+| lakhan | rajkot   |   50 |
+| shayam | baroda   |   75 |
+| ohrtho | baroda   |   80 |
++--------+----------+------+
+4 rows in set (0.11 sec)
+
+3. Display the details of all those items that have never been supplied.
+select itemnae from item where itemno not in(select itemno from dist_item);
+Empty set(0.00 sec)
+
+
+4. Delete all those items that have been supplied only once.
+delete from item where itemno not in(select  itemno from dist_item);
+Query ok 1 row affected(0.6 sec)
+
+
+
+5. List the names of distributors who have an ‘A’ and also a ‘B’ somewhere in their names.
+  select dname from distributer where dname like '%a or %b';
+  Empty set(0.00 sec)
+
+
+6. Count the number of items having the same colour but not having weight between 20 and
+  100.
+ select count(colour) from item where weight not  between 30 and
+ 100;
++---------------+
+| count(colour) |
++---------------+
+|             1 |
++---------------+
+1 row in set (0.00 sec)
+
+7. Display all those distributors who have supplied more than 1000 parts of the same type.
+select dname from distributer where dno=(select dno from dist_item where qty=100);
++-------+
+| dname |
++-------+
+| ram   |
++-------+
+1 row in set (0.00 sec)
+
+
+8. Display the average weight of items of the same colour provided at least three items have
+thatcolour.
+ select avg(weight) from item group by itemnae;
++-------------+
+| avg(weight) |
++-------------+
+|    100.0000 |
+|     20.0000 |
+|     70.0000 |
+|     75.0000 |
++-------------+
+4 rows in set (0.00 sec)
+
+9. Display the position where a distributor name has an ‘OH’ in its spelling somewhere after the fourth character.
+SELECT SUBSTRING('ohrtho',4,3);
++-------------------------+
+| SUBSTRING('ohrtho',4,3) |
++-------------------------+
+| tho                     |
++-------------------------+
+1 row in set (0.00 sec)
+
+10. Count the number of distributors who have a phone connection and are supplying item number ‘I100’.
+ select d.dno,d.dphone,i.itemno,i.itemnae,d1.qty from distributer
+ d,item i,dist_item d1 where d.dno=d1.dno and i.itemno=d1.itemno and i.itemno=101;
+
++-----+------------+--------+---------+------+
+| dno | dphone     | itemno | itemnae | qty  |
++-----+------------+--------+---------+------+
+|   1 | 2147483647 |    101 | shamppo |  100 |
++-----+------------+--------+---------+------+
+1 row in set (0.00 sec)
+
+11. create view dist1 as select d.dname ,i.itemnae,di.qty from distributer d,item i,dist_item di;
+Query OK, 0 rows affected (0.39 sec)
+
+12. List the name, address and phone number of distributors who have the same three digits in their number as ‘Mr. Talkative’.
+select * from distributer where substr(dphone,1,3)=(select subst
+r(dphone,1,3) from distributer where dname='ram');
++-----+-------+----------+--------+
+| dno | dname | daddress | dphone |
++-----+-------+----------+--------+
+|   1 | ram   | rajkot   |  12345 |
++-----+-------+----------+--------+
+1 row in set (0.00 sec)
+
+13.List all distributor names who supply either item I1 or I7 or the quantity supplied is more than 100.
+select dname distributer where dno(select dno from dist_item where qty=1000);
+Empty set(0.00 sec)
+
+14.Display the data of the top three heaviest ITEMS
+ select itemnae from item order by weight desc limit 3;
++-----------+
+| itemnae   |

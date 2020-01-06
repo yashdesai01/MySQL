@@ -1,0 +1,49 @@
+EMPMAST (empno, name, pfno, empbasic, deptno, designation)
+DEPT (DNO, DNAME)
+Rules: 
+HRA = 15% of basic
+DA = 50% of basic
+Medical = 100
+PF = 8.33%of basic
+Print Salary slip. Design your own format
+============================================================================
+create table empmast
+(
+empno int(5),
+name varchar(20),
+pfno int(5),
+empbasic int(10),
+deptno int(5),
+designation varchar(20),
+primary key (empno,deptno)
+);
+
+create table dept
+(
+dno int(5),
+dname varchar(20),
+foreign key (dno) references empmast(deptno)
+);
+
+insert into empmast values(1,'aakruti',123,80000,1,'manager');
+insert into empmast values(2,'aarohi',124,40000,1,'employee');
+insert into empmast values(3,'aarvi',125,60000,2,'employee');
+insert into empmast values(4,'aananya',126,120000,2,'manager');
+insert into empmast values(5,'aaradhya',127,80000,1,'employee');
+
+
+insert into dept values(1,'salling');
+insert into dept values(2,'production');
+insert into dept values(3,'advertise');
+
+
+select empbasic/100*15 AS hra from empmast;
+
+select empbasic/100*50 AS da from empmast;
+
+select empbasic/100 AS medical from empmast;
+
+select empbasic/100*8.33 AS pf from empmast;	
+
+select e.name,e.empbasic,e.designation,e.empbasic/100*15 AS hra,e.empbasic/100*50 AS da,e.empbasic/100 AS medical,e.empbasic/100*8.33 AS pf,d.dname from empmast e,dept d  where e.deptno=d.dno;
+

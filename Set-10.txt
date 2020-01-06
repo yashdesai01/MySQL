@@ -1,0 +1,191 @@
+Set 10:- 
+
+	Create the database BUS TRANSPORT and create given tables with all necessary constraints such as primary key, foreignkey,unique key, not null and check constrainrt;
+ 
+-->create database bus_transport;
+-->use bus_transport;
+
+--> CATEGORY (CAT_CODE, CATDESC)
+	
+		create table category
+		(catcode int(5) primary key,
+		catdesc varchar(15));
+	
+--> ROUTEMASTER (ROUTENO, ORIGIN, DESTINATION, FARE, DISTANCE, CAPACITY, DAY, CAT_CODE)
+
+		create table routemaster
+		(routeno int(5) primary key,
+		origin varchar(30),
+		destination varchar(30),
+		fare int(10),
+		distance int(10),
+		capacity int(5),
+		day int(3),
+		cat_code int(5) references category(cat_code));
+
+--> TICKETHEADER (TICKETNO, DATEOFISSUE, DATEOFTRAVEL, BOARDPLACE, ROUTENO)
+
+		create table ticketheader
+		(ticketno int(5) primary key,
+		dateofissue date,
+		dateoftravel date,
+		boardplace varchar(20),
+		routeno int(5) references routemaster(routeno));
+
+--> TICKET DETAILS (TICKETNO, NAME, SEX, AGE, FARE)
+	
+		create table ticketdetails
+		(ticketno int(5) references ticketheader(ticketno),
+		name varchar(10),
+		gender varchar(6),
+		age int(5),
+		fare int(10));
+		
+===> DELUXE, SUPERDELUXE, SUPERFAST AND NORMAL ARE THE CATDESC
+
+		alter table category add check(catdesc in('deluxe','superdeluxe','superfast','normal'));
+		
+===> ORIGIN AND DESTINATION CANNOT BE SAME
+		
+		-->trigger
+		
+		delimiter $$
+		create or replace trigger tr3_route
+		before insert on routemaster
+		for each row 
+		begin
+			if  new.origin = new.destination then
+				call raise_application_error(1001,'enter origin and destination not same');
+			end if;
+		end $$
+		call get_last_custom_error() $$
+		delimiter ;
+		
+===> Insert Values.....
+
+		insert into category values
+		(1,'deluxe'),
+		(2,'superdeluxe'),
+		(3,'superfast'),
+		(4,'normal');
+
+		
+		insert into routemaster values
+		(1,'rajkot','junagadh',70,100,25,1,4),
+		(2,'ahmedabad','surat',200,260,35,1,1),
+		(3,'rajkot','surat',400,450,50,1,2),
+		(4,'junagadh','mumbai',800,810,60,2,3),
+		(5,'gandhinagar','kutch',350,410,40,1,4);
+
+
+		insert into ticketheader values
+		(1,'2018-08-01','2018-12-08','gondal chowkdi',1),
+		(10,'2018-09-15','2018-12-10','laldarwaja',2),
+		(12,'2018-10-28','2018-01-15','morbi road',3),
+		(23,'2018-11-12','2018-02-20','taleti road',4),
+		(25,'2018-12-08','2018-12-25','morbi road',3),
+		(28,'2018-08-05','2018-12-13','railway station',3),
+		(15,'2018-10-07','2018-12-18','bus station',5);
+
+		
+		insert into ticketdetails values
+		(1,'tom','male',20,70),
+		(10,'jerry','female',22,200),
+		(12,'mickey','male',25,400),
+		(15,'mini','female',19,800),
+		(23,'daglo','male',23,150),
+		(25,'nobita','female',28,200),
+		(28,'suzuka','male',35,350);
+
+		
+	1. Display the total number of people traveled on each ticket group by ticket no 23.
+	
+		select concat(t.ticketno,' ',td.name)from ticketheader t,ticketdetails td where t.ticketno=td.ticketno and t.ticketno=23;
+		
+		
+	2. Give the total collection of fare for each route.
+		
+		select sum(fare) from routemaster;
+
+	3. Give the number of months between issue date and travel date of each ticket issued.
+	
+		select ticketno,timestampdiff(month,dateofissue,dateoftravel)"month difference" from ticketheader;
+
+	4. Count number of person boarding from the same place and same route.
+	
+		select count(name) from ticketdetails, routemaster rm, ticketheader th where boardplace='morbi road' and rm.routeno = th.routeno and ticketdetails.ticketno = th.ticketno;
+
+	5. Display count of person who has traveled in each category.
+	
+		select count(td.name) from ticketdetails td,ticketheader th,routemaster rm,category c where c.catcode<>0 and th.ticketno=td.ticketno and rm.routeno=th.routeno and rm.cat_code=c.catcode;
+
+	6. Write a trigger which allow to insert or update the bus capacity only greater than zero and less than 60.
+	
+		-->procedure 1
+		
+		delimiter $$
+		create procedure raise_application_error(in code integer,in message varchar(255))sql 
+		security invoker deterministic
+		begin
+			create temporary table if not exists raise_error(f1 int not null);
+
+			select code,message into @error_code,@error_message;
+			insert into raise_error values(null);
+		end $$
+		delimiter ;
+
+		-->procedure 2
+		
+		delimiter $$
+		create or replace procedure get_last_custom_error() sql security invoker deterministic
+		begin
+			select @error_code,@error_message;
+		end $$
+		delimiter ;
+		
+		-->insert trigger
+
+		delimiter $$
+		create or replace trigger tr_route
+		before insert on routemaster
+		for each row 
+		begin
+			if  new.capacity>=60 then
+				call raise_application_error(1001,'enter capacity between 0 to 60');
+			end if;
+		end $$
+		call get_last_custom_error() $$
+		delimiter ;
+		
+		--> Update trigger
+
+		delimiter $$
+		create or replace trigger tr1_route
+		before update on routemaster
+		for each row 	
+		begin
+			if  new.capacity>=60 then
+				call raise_application_error(1001,'enter capacity between 0 to 60');
+			end if;
+		end $$
+		call get_last_custom_error() $$
+
+		delimiter ;
+
+
+	7. Write a Procedure which will print tour details, a driver is going to take it. ( pass route_no as parameter)
+Route No: ____________ Vehicle number: __________________
+Transport Details
+Source		Destination		Start date		Total days		Capacity
+Xxx		Xxx			Xxx		999		999	
+	
+		delimiter $$
+		create or replace procedure p1(in rno int)
+		begin
+			select concat(r.origin,' ',r.destination,' ',t.dateoftravel,' ',r.day,' ',r.capacity)"detail"from routemaster r,ticketheader t where r.routeno=t.routeno and r.routeno=rno;
+		end $$
+		delimiter ; 
+		
+		
+		
+		

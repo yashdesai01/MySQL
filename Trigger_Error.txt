@@ -1,0 +1,95 @@
+
+CREATE a TRIGGER that will check the inserted value of an ID, if it is <0 (negative no.) then trigger will be fired with an error message and row will not be inserted into the table.
+***************************************************************
+EXAMPLE: 1
+
+create table trigger_test
+(
+    id int not null
+);
+
+Above is the table for which trigger need to be created as below.
+*****************************************************************
+delimiter //
+
+create trigger trg_trigger_test_ins before insert on trigger_test
+for each row
+begin
+    declare msg varchar(128);
+    if new.id < 0 then
+        set msg = concat('MyTriggerError: Trying to insert a negative value in trigger_test: ', cast(new.id as char));
+        signal sqlstate '45000' set message_text = msg;
+    end if;
+end
+//
+
+delimiter ;
+****************************************************************
+The above trigger will be fired when following event happen:
+
+insert into trigger_test values (-3);
+
+and message will be display like:
+
+ERROR 1644 (45000): MyTriggerError: Trying to insert a negative value in trigger_test: -3
+
+And the value will not be inserted into the table.
+
+**************************************************************
+If Insert is like :
+
+insert into trigger_test values (1); (//or any other +ve value for ID, then trigger will not be fire                                           value will be inserted into the table.)
+
+select * from trigger_test;  (check the inserted values)
+
+***************************************************************
+EXAMPLE: 2
+
+(a) for insert
+DELIMITER $$
+
+CREATE TRIGGER example_before_insert_allow_only_one_active
+     BEFORE INSERT ON example_tbl FOR EACH ROW
+     BEGIN
+          IF NEW.active = 1 AND (SELECT COUNT(id) FROM example_tbl 
+               WHERE active=1 AND foreign_key_id=NEW.foreign_key_id) > 0
+          THEN
+               SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'Cannot add or update row: only one active row allowed                                         per type';
+          END IF;
+     END;
+$$
+
+(b) for update
+
+CREATE TRIGGER example_before_update_allow_only_one_active
+     BEFORE UPDATE ON example_tbl  FOR EACH ROW
+     BEGIN
+          IF NEW.active = 1 AND (SELECT COUNT(id) FROM example_tbl
+               WHERE id<>NEW.id AND active=1 AND foreign_key_id=NEW.foreign_key_id) > 0
+          THEN
+               SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'Cannot add or update row: only one active row allowed per                                         type';
+          END IF;
+     END;
+$$
+
+OUTPUT:
+
+mysql> UPDATE example_tbl SET active=1 WHERE id=2;
+ERROR 1644 (45000): Cannot add or update row: only one active row allowed per type
+***************************************************************
+EXAMPLE: 3
+
+
+CREATE TRIGGER chk_dates  
+BEFORE INSERT ON verlof_aanvragen  
+FOR EACH ROW  
+BEGIN  
+  IF (NEW.datum < CURDATE() + INTERVAL 8 DAY OR NEW.datum > CURDATE() + INTERVAL 365 DAY) 
+THEN  
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Any Message';
+
+END IF  
+END 
+

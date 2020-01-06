@@ -1,0 +1,123 @@
+1. Modify the APPLICANT table so that every applicant id has an ‘A’ before its value. E.g. if value is ‘1123’, it should become ‘A1123’.
+update applicant set aid = 'a%' where aid ='1113';
+
+2.Display test center details where no tests were conducted.
+select * from etest_centre where etcid=(select etcid from etest_details where etcid=0);
+
+4.Display details of applicants who appeared for all tests.
+select a.aid,aname,addr,abirth_dt from applicant a,etest_details where etcid<>0 and etest_details.aid=a.aid;
+
+5.Display those tests where no applicant has failed.
+select aid,e.etid,etcid,etest_dt from etest_details e,entrance_test e1 where cut_score>=25 and e.
+id=e1.etid;
+
+6.Display details of entrance test centers which had full attendance between 1st Oct 15 and 15th
+Oct 16.
+select * from etest_details where etest_dt between '2018-11-25' and '2018-12-10';
+
+7.Display details of the applicants who scored more than the cut score in the tests they appeared in.
+select a.aid,aname,addr,abirth_dt from applicant a,etest_details ed,entrance_test et where score>_score and a.aid=ed.aid and et.etid=ed.etid;
+
+8.Display average and maximum score test wise of tests conducted at Mumbai.
+select ed.aid,etid,etcid,etest_dt,max(score),avg(score) from etest_details ed,applicant where addr='mumbai';
+
+9.Display the number of applicants who have appeared for each test, test center wise.
+select a.aid, aname, addr, abirth_dt from applicant a, etest_details ed where etcid<>0 and addr='gondal' and a.aid=ed.aid;
+
+10.Display details about test centers where no tests have been conducted.
+select * from etest_centre where etcid=0;
+
+11.For tests, which have been conducted between 2-3-17 and 23-4-17, show details of the tests as well as the test centre.
+select aid, etid, ed.etcid, etest_dt, score, location from etest_details ed, etest_centre where etest_dt between '2017-03-02' and '2017-04-23';
+
+12.How many applicants appeared in the ‘ORACLE FUNDAMENTALS’ test at Chennai in the month of February?
+select a.aid, aname, addr, abirth_dt from applicant a, entrance_test et, etest_details ed, etest ec where  etname = 'oracle' and location='left' and a.aid=ed.aid and et.etid=ed.etid;
+
+14.Display details about applicants who appeared for tests in the same month as the month in which they were born.
+select a.aid, aname, addr, abirth_dt, max(score), etname from applicant a, etest_details ed, entrance_test et where etname='oracle';
+
+15.
+
+16.Write a procedure which will print maximum score centre wise.
+delimiter $$
+create or replace procedure pro1()
+begin
+	select max(score),location, ed.etcid from etest_centre ec, etest_details ed where ed.etcid=10;
+	select max(score),location, ed.etcid from etest_centre ec, etest_details ed where ed.etcid=20;
+	select max(score),location, ed.etcid from etest_centre ec, etest_details ed where ed.etcid=30;
+end$$
+delimiter ;
+
+17.Write a procedure which will print details of entrance test.
+delimiter $$
+
+delimiter $$
+create or replace procedure pro2()
+begin
+	
+	select location,aid,ed.etest_dt,score from etest_details ed,etest_centre  ec where ed.etcid=ec.etcid;
+end$$
+delimiter ;
+
+18. Write a trigger which do not allow insertion / updation / deletion of Enterance test details on Sunday.
+
+procedure-1
+DELIMITER $$
+CREATE OR REPLACE PROCEDURE raise_application_error(IN CODE INTEGER, IN MESSAGE VARCHAR(255)) 
+	SQL SECURITY INVOKER DETERMINISTIC
+BEGIN
+  CREATE TEMPORARY TABLE IF NOT EXISTS RAISE_ERROR(F1 INT NOT NULL);
+
+  SELECT CODE, MESSAGE INTO @error_code, @error_message;
+  INSERT INTO RAISE_ERROR VALUES(NULL);
+END;
+$$
+
+procedure-2
+DELIMITER $$
+CREATE OR REPLACE PROCEDURE get_last_custom_error() SQL SECURITY INVOKER DETERMINISTIC
+BEGIN
+  SELECT @error_code, @error_message;
+END;
+$$
+DELIMITER ;
+
+
+----------insertion
+delimiter $$
+create or replace trigger tri2
+before insert on etest_details
+for each row
+begin
+	if dayname(new.etest_dt)='Wednesday' then
+	call raise_application_error(1001,'today is wednesday so data not insert');
+	end if;
+end $$
+call get_last_custom_error()$$
+delimiter ;
+
+----------updation
+delimiter $$
+create or replace trigger tri2
+before update on etest_details
+for each row
+begin
+	if dayname(new.etest_dt)='Wednesday' then
+	call raise_application_error(1001,'today is wednesday so data not insert');
+	end if;
+end $$
+call get_last_custom_error()$$
+delimiter ;
+
+--------deletion
+delimiter $$
+create or replace trigger tri2
+before delete on etest_details
+for each row
+begin
+	if dayname(new.etest_dt)='Wednesday' then
+	call raise_application_error(1001,'today is wednesday so data not insert');
+	end if;
+end $$
+call get_last_custom_error()$$
+delimiter ;

@@ -1,0 +1,46 @@
+
+
+
+
+
+
+
+
+
+create database assignment15;
+use assignment15;
+
+create table dept
+(deptno int(2)primary key,
+deptnm varchar(100));
+
+create table emp
+(empno int(2)primary key,
+empnm varchar(100),
+empadd varchar(1),
+salary int(10),
+date_birth date,
+joindt date,
+deptno int(2),
+foreign key(deptno)references dept(deptno)ON DELETE CASCADE
+);
+
+insert into dept values(1,'MCA'),(2,'MBA');
+insert into emp values(101,'Anjana','r',50000,'1998-12-02','2012-12-02',1),(102,'Brinkal','r',50000,'1998-12-02','2018-12-02',2);
+
+
+--------Write a PL/SQL block (table above EMP-DEPT table) which takes as input Department name and displays all the employees of this department who has been working since last five years-------
+
+
+delimiter $$ 
+create or replace procedure p3(IN dept_nm varchar(10))
+  select emp.empno,emp.empnm,emp.empadd,emp.salary,emp.date_birth,emp.joindt from emp inner join dept ON emp.deptno=dept.deptno WHERE deptnm = dept_nm and YEAR(CURDATE())-YEAR(joindt)>5;
+end $$
+delimiter ;
+
+
+HOW TO RUN : 
+call p1('MBA');
+call p1('MCA');
+
+ 
