@@ -1,0 +1,84 @@
+create database psql;
+
+create table one
+(
+	id int(10) not null auto_increment,
+	name varchar(55),
+	primary key(id)	
+);
+
+insert into one (id,name) values(1,"yash");
+
+alter table one drop column name;
+
+alter table one add name varchar(55);
+
+drop table second;
+
+==> crud
+
+select * from one where id=1;
+select name from one where id=1;
+
+update one set name="desai" where name="yash";
+
+delete from one where name="yash";
+
+delete from exampleTable where id >= 40000 and id <= 50000;
+
+select age from one order by age;
+select age from one order by age desc;
+
+select age from one order by age desc limit 3;
+
+==> like 
+
+select name from one where fname like '%as%';
+select name from one where fname like 'y%';
+
+show error;
+shoe warning;
+
+==>aggregate
+
+select max(age) from one;
+select min(age) from one;
+select sum(age) from one;
+select count(id) from one;
+select avg(age) from one;
+
+==>logical oprator
+
+select * from one where age =20;
+select * from one where age !=20;
+
+==>join
+
+select * from one,two where one.cid = two.cid;
+select * from one join two on one.cid = two.cid;
+
+==>left join
+
+select customers.id, cname,oamount
+from customers
+left join orders
+on customers.cid = orders.cid;
+
+==>view
+
+CREATE VIEW [Products Above Average Price] AS
+SELECT ProductName, Price
+FROM Products
+WHERE Price > (SELECT AVG(Price) FROM Products);
+
+==> check
+
+CREATE TABLE Persons (
+    ID int NOT NULL,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int,
+    CHECK (Age>=18)
+);
+
+==>
